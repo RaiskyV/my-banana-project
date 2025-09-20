@@ -1,0 +1,246 @@
+[
+  {
+    "title": "Иллюстрация в фигурку",
+    "author": "@ZHO_ZHO_ZHO",
+    "author_url": "https://x.com/ZHO_ZHO_ZHO",
+    "inputs": [{ "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case1/input0.jpg" }],
+    "outputs": [{ "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case1/output0.jpg" }],
+    "description": "Необходимо загрузить референсное изображение в качестве объекта для создания фигурки.",
+    "prompt": "turn this photo into a character figure. Behind it, place a box with the character's image printed on it, and a computer showing the Blender modeling process on its screen. In front of the box, add a round plastic base with the character figure standing on it. set the scene indoors if possible"
+  },
+  {
+    "title": "Генерация вида с земли по стрелке на карте",
+    "author": "@tokumin",
+    "author_url": "https://x.com/tokumin",
+    "inputs": [
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case2/input.jpg" },
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case2/input3.jpg" },
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case2/input2.jpg" }
+    ],
+    "outputs": [
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case2/output.jpg" },
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case2/output3.jpg" },
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case2/output2.jpg" }
+    ],
+    "description": "Необходимо загрузить изображение из Google Maps с красной стрелкой.",
+    "prompt": "draw what the red arrow sees / draw the real world view from the red circle in the direction of the arrow."
+  },
+  {
+    "title": "Информация AR в реальном мире",
+    "author": "@bilawalsidhu",
+    "author_url": "https://x.com/bilawalsidhu",
+    "inputs": [],
+    "outputs": [{ "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case3/output.jpg" }],
+    "description": "Необходимо загрузить референсное изображение.",
+    "prompt": "you are a location-based AR experience generator. highlight [point of interest] in this image and annotate relevant information about it.",
+    "note": "Необходимо указать в промпте [POI] - достопримечательность, которую нужно аннотировать."
+  },
+  {
+    "title": "Извлечение 3D зданий/Создание изометрических моделей",
+    "author": "@Zieeett",
+    "author_url": "https://x.com/Zieeett",
+    "inputs": [
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case4/input.jpg" },
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case4/input2.jpg" }
+    ],
+    "outputs": [
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case4/output.jpg" },
+      { "type": "image", "src": "https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case4/output2.jpg" }
+    ],
+    "description": "Необходимо загрузить изображение с соответствующим объектом.",
+    "prompt": "Make Image Daytime and Isometric [Building Only]",
+    "note": "Измените информацию в [квадратных скобках] по необходимости (можно указать транспорт, людей и т.д.)."
+  },
+  {
+    "title": "Фотографии себя в разные эпохи",
+    "author": "@AmirMushich",
+    "author_url": "https://x.com/AmirMushich",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case5/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case5/output.jpg"}],
+    "description": "Необходимо загрузить фотографию человека.",
+    "prompt": "Change the characer's style to [1970]'s classical [male] style\n\nAdd [long curly] hair, \n[long mustache], \nchange the background to the iconic [californian summer landscape]\n\nDon't change the character's face",
+    "note": "Измените текст в [квадратных скобках] на нужную вам эпоху и детали."
+  },
+  {
+    "title": "Генерация по нескольким референсам",
+    "author": "@MrDavids1",
+    "author_url": "https://x.com/MrDavids1",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case6/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case6/output.jpg"}],
+    "description": "Необходимо загрузить несколько референсных изображений.",
+    "prompt": "A model is posing and leaning against a pink bmw. She is wearing the following items, the scene is against a light grey background. The green alien is a keychain and it's attached to the pink handbag. The model also has a pink parrot on her shoulder. There is a pug sitting next to her wearing a pink collar and gold headphones.",
+    "note": "Промпт должен подробно описывать и включать несколько референсных объектов."
+  },
+  {
+    "title": "Автоматическое редактирование фото",
+    "author": "@op7418",
+    "author_url": "https://x.com/op7418",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case7/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case7/output.jpg"}],
+    "description": "Необходимо загрузить изображение, требующее коррекции.",
+    "prompt": "This photo is very boring and plain. Enhance it! Increase the contrast, boost the colors, and improve the lighting to make it richer,You can crop and delete details that affect the composition."
+  },
+  {
+    "title": "Управление позами нескольких персонажей с помощью наброска",
+    "author": "@op7418",
+    "author_url": "https://x.com/op7418",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case8/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case8/output.jpg"}],
+    "description": "Необходимо загрузить изображения персонажей и набросок от руки.",
+    "prompt": "Have these two characters fight using the pose from Figure 3. Add appropriate visual backgrounds and scene interactions,Generated image ratio is 16:9"
+  },
+  {
+    "title": "Генерация изображения с другого ракурса",
+    "author": "@op7418",
+    "author_url": "https://x.com/op7418",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case9/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case9/output.jpg"}],
+    "description": "Необходимо загрузить фотографию, сделанную с земли.",
+    "prompt": "Convert the photo to a top-down view and mark the location of the photographer."
+  },
+  {
+    "title": "Пользовательские стикеры с персонажем",
+    "author": "@op7418",
+    "author_url": "https://x.com/op7418",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case10/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case10/output.jpg"}],
+    "description": "Необходимо загрузить референсное изображение стикера и изображение персонажа.",
+    "prompt": "Help me turn the character into a white outline sticker similar to Figure 2. The character needs to be transformed into a web illustration style, and add a playful white outline short phrase describing Figure 1."
+  },
+  {
+    "title": "Из аниме в реального косплеера",
+    "author": "@ZHO_ZHO_ZHO",
+    "author_url": "https://x.com/ZHO_ZHO_ZHO",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case11/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case11/output.jpg"}],
+    "description": "Необходимо загрузить иллюстрацию.",
+    "prompt": "Generate a photo of a girl cosplaying this illustration, with the background set at Comiket"
+  },
+  {
+    "title": "Генерация дизайна персонажа",
+    "author": "@ZHO_ZHO_ZHO",
+    "author_url": "https://x.com/ZHO_ZHO_ZHO",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case12/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case12/output.jpg"}],
+    "description": "Необходимо загрузить референсное изображение персонажа.",
+    "prompt": "Generate character design for me (Character Design)\n\nProportion design (different height comparisons, head-to-body ratio, etc.)\n\nThree views (front, side, back)\n\nExpression design (Expression Sheet) → like the image you sent\n\nPose design (Pose Sheet) → various common poses\n\nCostume design (Costume Design)"
+  },
+  {
+    "title": "Раскрашивание лайнарта по палитре",
+    "author": "@ZHO_ZHO_ZHO",
+    "author_url": "https://x.com/ZHO_ZHO_ZHO",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case13/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case13/output.jpg"}],
+    "description": "Необходимо загрузить изображение с лайнартом и изображение с цветовой палитрой.",
+    "prompt": "Accurately use the color palette from Figure 2 to color the character in Figure 1"
+  },
+  {
+    "title": "Инфографика для статьи",
+    "author": "@黄建同学",
+    "author_url": "https://weibo.com/u/5648162302",
+    "inputs": [],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case14/output.jpg"}],
+    "description": "Необходимо загрузить блог/статью.",
+    "prompt": "Generate an infographic for the article content\nRequirements:\n1. Translate the content into English and extract key information from the article\n2. Keep the content in the image concise, only retaining the main title\n3. Use English text in the image\n4. Add rich and cute cartoon characters and elements"
+  },
+  {
+    "title": "Смена нескольких причесок",
+    "author": "@balconychy",
+    "author_url": "https://x.com/balconychy",
+    "inputs": [],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case15/output.jpg"}],
+    "description": "Необходимо загрузить портретное изображение для смены причесок.",
+    "prompt": "Generate avatars of this person with different hairstyles in a 3x3 grid format"
+  },
+  {
+    "title": "Схема-аннотация модели",
+    "author": "@berryxia_ai",
+    "author_url": "https://x.com/berryxia_ai",
+    "inputs": [],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case16/output.jpg"}],
+    "description": "",
+    "prompt": "Draw [3D human organ model display example heart] for academic presentation, with annotations and explanations, suitable for showcasing its principles and [each organ's] functions, very realistic, highly detailed, with extremely fine design.",
+    "caution": "В результатах аннотации есть значительное количество ошибок ⚠️. Обратите внимание, что аннотации Nano-Banana не совсем точны, и перед использованием следует тщательно проверить правильность информации.",
+    "note": "Измените текст в [квадратных скобках] на модель, которую вы хотите продемонстрировать."
+  },
+  {
+    "title": "Пользовательская мраморная скульптура",
+    "author": "@umesh_ai",
+    "author_url": "https://x.com/umesh_ai",
+    "inputs": [],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case17/output.jpg"}],
+    "description": "Необходимо загрузить референсное изображение.",
+    "prompt": "A photorealistic image of an ultra-detailed sculpture of the subject in image made of shining marble. The sculpture should display smooth and reflective marble surface, emphasizing its luster and artistic craftsmanship. The design is elegant, highlighting the beauty and depth of marble. The lighting in the image should enhance the sculpture's contours and textures, creating a visually stunning and mesmerizing effect"
+  },
+  {
+    "title": "Приготовление еды из ингредиентов",
+    "author": "@Gdgtify",
+    "author_url": "https://x.com/Gdgtify",
+    "inputs": [
+      {"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case18/input1.jpg"},
+      {"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case18/input2.jpg"},
+      {"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case18/input3.jpg"}
+    ],
+    "outputs": [
+      {"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case18/output1.jpg"},
+      {"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case18/output2.jpg"},
+      {"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case18/output3.jpg"}
+    ],
+    "description": "Необходимо загрузить фото с различными ингредиентами.",
+    "prompt": "make me a delicious lunch with these ingredients, and put it on a plate , zoomed in view of the plate, remove the other plates and ingredients."
+  },
+  {
+    "title": "Решение математической задачи",
+    "author": "@Gorden Sun",
+    "author_url": "https://www.xiaohongshu.com/user/profile/632e72f900000000230397fe",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case19/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case19/output.jpg"}],
+    "description": "Необходимо загрузить математическую задачу.",
+    "prompt": "Write the answer to the problem in the corresponding position based on the question"
+  },
+  {
+    "title": "Колоризация старых фотографий",
+    "author": "@GeminiApp",
+    "author_url": "https://x.com/GeminiApp",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case20/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case20/output.jpg"}],
+    "description": "Необходимо загрузить старую фотографию для восстановления.",
+    "prompt": "restore and colorize this photo."
+  },
+  {
+    "title": "OOTD (Наряд дня)",
+    "author": "@302.AI",
+    "author_url": "https://medium.com/@302.AI",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case21/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case21/output.jpg"}],
+    "description": "Необходимо загрузить изображение человека и изображение одежды.",
+    "prompt": "Choose the person in Image 1 and dress them in all the clothing and accessories from Image 2. Shoot a series of realistic OOTD-style photos outdoors, using natural lighting, a stylish street style, and clear full-body shots. Keep the person's identity and pose from Image 1, but show the complete outfit and accessories from Image 2 in a cohesive, stylish way."
+  },
+  {
+    "title": "Смена одежды персонажа",
+    "author": "@skirano",
+    "author_url": "https://x.com/skirano",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case22/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case22/output.jpg"}],
+    "description": "Необходимо загрузить изображение человека и изображение одежды.",
+    "prompt": "Replace the person's clothing in the input image with the target clothing shown in the reference image. Keep the person's pose, facial expression, background, and overall realism unchanged. Make the new outfit look natural, well-fitted, and consistent with lighting and shadows. Do not alter the person's identity or the environment — only change the clothes."
+  },
+  {
+    "title": "Генерация результата с нескольких ракурсов",
+    "author": "@Error_HTTP_404",
+    "author_url": "https://x.com/Error_HTTP_404",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case23/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case23/output.jpg"}],
+    "description": "Необходимо загрузить референсное изображение.",
+    "prompt": "Generate the Front, Rear, Left, Right, Top, Bottom views on white. Evenly spaced. Consistent subject. Isometric Perspective Equivalence."
+  },
+  {
+    "title": "Раскадровка фильма",
+    "author": "@GeminiApp",
+    "author_url": "https://x.com/GeminiApp",
+    "inputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case24/input.jpg"}],
+    "outputs": [{"type":"image","src":"https://raw.githubusercontent.com/PicoTrex/Awesome-Nano-Banana-images/main/images/case24/output.jpg"}],
+    "description": "Необходимо загрузить референсное изображение.",
+    "prompt": "Create an addictively intriguing 12 part story with 12 images with these two characters in a classic black and white film noir detective story. Make it about missing treasure that they get clues for throughout and then finally discover. The story is thrilling throughout with emotional highs and lows and ending on a great twist and high note. Do not include any words or text on the images but tell the story purely through the imagery itself."
+  }
+]

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Галерея Кейсов | Nano Banana Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            'brand-pink': '#f0abfc',
+            'brand-purple': '#a855f7',
+            'brand-bg-dark': '#111111',
+            'brand-bg-light': '#f3f4f6',
+            'brand-border': 'rgba(255,255,255,.1)',
+            'brand-border-light': 'rgba(0,0,0,.1)',
+            'brand-text': '#a3a3a3',
+            'brand-text-light': '#d4d4d4'
+          },
+          keyframes: {
+            'fade-up': { '0%': {opacity: 0, transform:'translateY(12px)'}, '100%': {opacity: 1, transform:'translateY(0)'} },
+          },
+          animation: {
+            'fade-up': 'fade-up .6s cubic-bezier(.22,.68,0,1) both',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { 
+      background-image: url('https://images.unsplash.com/photo-1473773508845-188df298d2d1?q=80&w=1974&auto=format&fit=crop'); 
+      background-size: cover; background-position: center; background-attachment: fixed; 
+    }
+    .glass-card { background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--tw-border-brand-border); }
+    .light .glass-card { background: rgba(255, 255, 255, 0.4); border: 1px solid var(--tw-border-brand-border-light); }
+    .loader { border: 4px solid rgba(255,255,255,.2); border-left-color: #a855f7; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-hidden { display: none; }
+    /* Fix for modal background and readability */
+    .modal-base.glass-card {
+      background: rgba(20, 20, 22, 0.9);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+    .light .modal-base.glass-card {
+      background: rgba(243, 244, 246, 0.95);
+    }
+    body.modal-open {
+        overflow: hidden;
+    }
+  </style>
+</head>
+<body class="antialiased bg-brand-bg-dark text-brand-text transition-colors duration-300">
+  
+  <header class="sticky top-0 z-50 py-3">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="glass-card flex items-center justify-between h-16 rounded-2xl px-4">
+        <div class="flex items-center space-x-3">
+          <iconify-icon icon="lucide:boxes" width="24" height="24" class="text-brand-pink"></iconify-icon>
+          <h1 class="font-semibold text-gray-900 dark:text-white text-lg">Галерея Кейсов</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="generate-idea-btn" class="px-3 py-1.5 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-pink to-brand-purple hover:opacity-90 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2">
+                <iconify-icon icon="lucide:sparkles" width="16" height="16"></iconify-icon>
+                ✨ Сгенерировать идею
+            </button>
+            <a href="index.html" class="px-3 py-1.5 border border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white bg-black/10 dark:bg-white/5 hover:bg-black/20 dark:hover:bg-white/10 transition-transform duration-200 hover:scale-105 active:scale-95 flex items-center gap-2">
+                <iconify-icon icon="lucide:arrow-left" width="16" height="16"></iconify-icon>
+                Назад к гайду
+            </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-8">
+      <div class="relative">
+        <iconify-icon icon="lucide:search" width="20" height="20" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-400 pointer-events-none"></iconify-icon>
+        <input type="text" id="search-input" placeholder="Поиск по названию, автору или промпту..." class="w-full pl-12 pr-4 py-3 bg-black/10 dark:bg-white/5 border border-white/10 rounded-xl focus:ring-1 focus:ring-brand-purple focus:outline-none text-gray-800 dark:text-white placeholder-gray-600 dark:placeholder-gray-400 text-lg" />
+      </div>
+    </div>
+    
+    <div id="loader-container" class="flex justify-center py-20">
+      <div class="loader"></div>
+    </div>
+
+    <div id="cases-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <!-- Кейсы будут загружены сюда -->
+    </div>
+    
+    <p id="no-results" class="text-center text-xl text-gray-400 py-20 hidden">По вашему запросу ничего не найдено.</p>
+
+  </main>
+
+  <!-- Case Detail Modal -->
+  <div id="case-detail-overlay" class="fixed inset-0 bg-black/70 z-[100] transition-opacity duration-300 opacity-0 pointer-events-none modal-hidden"></div>
+  <div id="case-detail-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl modal-base glass-card rounded-2xl z-[101] transition-all duration-300 opacity-0 scale-95 modal-hidden flex flex-col max-h-[90vh]">
+      <div class="overflow-y-auto p-8 relative">
+          <button id="case-detail-close-btn" class="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 z-10">
+              <iconify-icon icon="lucide:x" width="24" height="24" class="text-brand-text-light"></iconify-icon>
+          </button>
+          <div id="case-detail-content-wrapper">
+              <!-- Detailed case content will be injected here -->
+          </div>
+      </div>
+  </div>
+
+  <!-- Gemini Modal -->
+  <div id="gemini-modal-overlay" class="fixed inset-0 bg-black/70 z-[110] transition-opacity duration-300 opacity-0 pointer-events-none modal-hidden"></div>
+  <div id="gemini-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl modal-base glass-card rounded-2xl p-6 z-[120] transition-all duration-300 opacity-0 scale-95 modal-hidden flex flex-col max-h-[85vh]">
+    <div class="flex-shrink-0 flex items-center justify-between mb-4">
+      <h3 id="gemini-modal-title" class="text-xl font-bold text-gray-100 flex items-center gap-2"><iconify-icon icon="lucide:sparkles" class="text-brand-pink"></iconify-icon> Gemini Assistant</h3>
+      <button id="gemini-modal-close-btn" class="p-2 rounded-full hover:bg-white/10">
+        <iconify-icon icon="lucide:x" width="20" height="20" class="text-brand-text-light"></iconify-icon>
+      </button>
+    </div>
+    <div id="gemini-modal-content" class="overflow-y-auto text-brand-text-light prose prose-invert max-w-none prose-p:my-2 prose-headings:text-white pr-2">
+      <!-- Содержимое от Gemini -->
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded-xl glass-card text-white z-[130]"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const casesContainer = document.getElementById('cases-container');
+      const loaderContainer = document.getElementById('loader-container');
+      const searchInput = document.getElementById('search-input');
+      const noResults = document.getElementById('no-results');
+      const toast = document.getElementById('toast');
+      const generateIdeaBtn = document.getElementById('generate-idea-btn');
+      
+      const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+      const geminiModal = document.getElementById('gemini-modal');
+      const geminiModalTitle = document.getElementById('gemini-modal-title');
+      const geminiModalContent = document.getElementById('gemini-modal-content');
+      const geminiModalCloseBtn = document.getElementById('gemini-modal-close-btn');
+
+      const caseDetailOverlay = document.getElementById('case-detail-overlay');
+      const caseDetailModal = document.getElementById('case-detail-modal');
+      const caseDetailContentWrapper = document.getElementById('case-detail-content-wrapper');
+      const caseDetailCloseBtn = document.getElementById('case-detail-close-btn');
+
+      let allCasesData = [];
+      const apiKey = "AIzaSyAfxN5kHgrXQC0EH6gd3A8-TG-3edlz9BI"; 
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2200);
+      }
+      
+      function markdownToHtml(text) {
+        if (!text) return '';
+        return text
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/^### (.*$)/gim, '<h3 class="font-bold text-lg mb-2">$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2 class="font-bold text-xl mb-3">$1</h2>')
+          .replace(/^\* (.*$)/gim, '<ul class="list-disc list-inside my-2"><li>$1</li></ul>')
+          .replace(/<\/ul>\s*<ul class="list-disc list-inside my-2">/g, '')
+          .replace(/\n/g, '<br>');
+      }
+
+      async function callGemini(prompt, retries = 3, delay = 1000) {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        try {
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                if (response.status === 429 && retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGemini(prompt, retries - 1, delay * 2); 
+                }
+                throw new Error(`API Error: ${response.status}`);
+            }
+            const result = await response.json();
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "Не удалось получить ответ от модели.";
+        } catch (error) {
+            console.error("Gemini API call failed:", error);
+            if (retries > 0) {
+              await new Promise(res => setTimeout(res, delay));
+              return callGemini(prompt, retries - 1, delay * 2);
+            }
+            return `Произошла ошибка при обращении к Gemini API: ${error.message}`;
+        }
+      }
+
+      function showGeminiModal(title, content) {
+        geminiModalTitle.innerHTML = `<iconify-icon icon="lucide:sparkles" class="text-brand-pink"></iconify-icon> ${title}`;
+        geminiModalContent.innerHTML = content;
+        geminiModalOverlay.classList.remove('modal-hidden', 'opacity-0', 'pointer-events-none');
+        geminiModal.classList.remove('modal-hidden', 'opacity-0', 'scale-95');
+        document.body.classList.add('modal-open');
+      }
+
+      function closeGeminiModal() {
+        geminiModalOverlay.classList.add('opacity-0', 'pointer-events-none');
+        geminiModal.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+            geminiModalOverlay.classList.add('modal-hidden');
+            geminiModal.classList.add('modal-hidden');
+        }, 300);
+        if (!caseDetailModal.classList.contains('modal-hidden')) {
+            // keep modal-open if another modal is still open
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+      }
+      
+      geminiModalCloseBtn.addEventListener('click', closeGeminiModal);
+      geminiModalOverlay.addEventListener('click', (e) => {
+        if (e.target === geminiModalOverlay) {
+          closeGeminiModal();
+        }
+      });
+
+      function openCaseDetailModal() {
+        caseDetailOverlay.classList.remove('modal-hidden', 'opacity-0', 'pointer-events-none');
+        caseDetailModal.classList.remove('modal-hidden', 'opacity-0', 'scale-95');
+        document.body.classList.add('modal-open');
+      }
+
+      function closeCaseDetailModal() {
+        caseDetailOverlay.classList.add('opacity-0', 'pointer-events-none');
+        caseDetailModal.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+            caseDetailOverlay.classList.add('modal-hidden');
+            caseDetailModal.classList.add('modal-hidden');
+        }, 300);
+        if (!geminiModal.classList.contains('modal-hidden')) {
+            // keep modal-open if another modal is still open
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+      }
+
+      caseDetailCloseBtn.addEventListener('click', closeCaseDetailModal);
+      caseDetailOverlay.addEventListener('click', (e) => {
+        if (e.target === caseDetailOverlay) {
+          closeCaseDetailModal();
+        }
+      });
+      
+      function populateAndShowCaseModal(caseData) {
+          const inputsHtml = (caseData.inputs || []).map(i => `<img src="${i.src}" alt="Input image" class="rounded-lg border border-gray-200 dark:border-brand-border shadow-md w-full object-cover" loading="lazy">`).join('');
+          const outputsHtml = (caseData.outputs || []).map(o => `<img src="${o.src}" alt="Output image" class="rounded-lg border border-gray-200 dark:border-brand-border shadow-md w-full object-cover" loading="lazy">`).join('');
+          
+          const modalContentHtml = `
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 pr-12">${caseData.title}</h2>
+            <p class="text-md text-gray-700 dark:text-brand-text mb-6">Автор: <a href="${caseData.author_url || '#'}" target="_blank" class="text-brand-purple hover:underline">${caseData.author || 'Не указан'}</a></p>
+            
+            <div class="grid grid-cols-2 gap-6 mb-6">
+              ${inputsHtml ? `<div class="space-y-4">${inputsHtml}</div>` : ''}
+              ${outputsHtml ? `<div class="space-y-4 ${!inputsHtml ? 'col-span-2' : ''}">${outputsHtml}</div>` : ''}
+            </div>
+            
+            ${caseData.description ? `<p class="text-gray-800 dark:text-brand-text-light mb-4">${caseData.description}</p>` : ''}
+            
+            ${caseData.prompt ? `
+              <div class="relative mt-4">
+                <h4 class="font-semibold mb-2 text-gray-800 dark:text-brand-text-light text-sm uppercase tracking-wider">Промпт:</h4>
+                <button class="copy-prompt-btn absolute top-0 right-0 p-2 bg-black/20 dark:bg-white/10 hover:bg-black/30 dark:hover:bg-white/20 rounded-lg text-gray-300 transition-colors" title="Копировать промпт" data-prompt="${caseData.prompt.replace(/"/g, '&quot;')}">
+                    <iconify-icon icon="lucide:copy" width="16" height="16"></iconify-icon>
+                </button>
+                <pre class="p-4 bg-black/10 dark:bg-white/5 border border-white/10 rounded-lg text-sm text-gray-800 dark:text-brand-text-light whitespace-pre-wrap font-mono"><code>${caseData.prompt}</code></pre>
+                <div class="flex gap-4 mt-3">
+                  <button class="explain-prompt-btn text-sm px-4 py-2 rounded-lg bg-sky-500/20 text-sky-300 hover:bg-sky-500/40 transition-colors w-full flex items-center justify-center gap-2">✨ Объяснить</button>
+                  <button class="improve-prompt-btn text-sm px-4 py-2 rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/40 transition-colors w-full flex items-center justify-center gap-2">✨ Улучшить</button>
+                </div>
+              </div>
+            ` : ''}
+            
+            <div class="mt-6 pt-6 border-t border-white/10">
+                ${caseData.note ? `<div class="mt-2 p-4 bg-sky-900/50 border border-sky-700/50 rounded-lg text-md text-sky-300"><strong class="font-semibold text-sky-200">Примечание:</strong> ${caseData.note}</div>` : ''}
+                ${caseData.caution ? `<div class="mt-2 p-4 bg-amber-900/50 border border-amber-700/50 rounded-lg text-md text-amber-300"><strong class="font-semibold text-amber-200">⚠️ Внимание:</strong> ${caseData.caution}</div>` : ''}
+            </div>
+          `;
+          
+          caseDetailContentWrapper.innerHTML = modalContentHtml;
+          openCaseDetailModal();
+      }
+
+      async function handleExplainPrompt(promptText) {
+        showGeminiModal('Объяснение промпта', '<div class="flex justify-center items-center p-8"><div class="loader"></div></div>');
+        const userPrompt = `Ты — эксперт по нейросетям для генерации изображений. Объясни простыми словами на русском языке, что делает следующий промпт. Разбей объяснение на ключевые части и цели. Промпт: "${promptText}"`;
+        const explanation = await callGemini(userPrompt);
+        showGeminiModal('Объяснение промпта', markdownToHtml(explanation));
+      }
+
+      async function handleImprovePrompt(promptText) {
+        showGeminiModal('Улучшение промпта', '<div class="flex justify-center items-center p-8"><div class="loader"></div></div>');
+        const userPrompt = `Ты — креативный ИИ-ассистент. Предложи 3-4 интересных и творческих вариации на русском языке для следующего промпта, чтобы получить разнообразные результаты. Сделай их разными по стилю или содержанию. Промпт: "${promptText}"`;
+        const suggestions = await callGemini(userPrompt);
+        showGeminiModal('Варианты промпта', markdownToHtml(suggestions));
+      }
+
+      generateIdeaBtn.addEventListener('click', async () => {
+        showGeminiModal('Генерация новой идеи', '<div class="flex justify-center items-center p-8"><div class="loader"></div></div>');
+        const userPrompt = `Придумай новую креативную идею для кейса по генерации изображений с помощью AI. Опиши идею на русском, дай ей название на русском и напиши подробный, качественный промпт на английском языке, который можно использовать для генерации. Ответ верни в виде чистого Markdown.`;
+        const idea = await callGemini(userPrompt);
+        showGeminiModal('Новая идея для кейса', markdownToHtml(idea));
+      });
+
+
+      function renderCases(data) {
+        casesContainer.innerHTML = '';
+        noResults.classList.toggle('hidden', data.length > 0);
+        
+        data.forEach((c) => {
+          const inputsHtml = (c.inputs || []).map(i => `<img src="${i.src}" alt="Input image" class="rounded-lg border border-gray-200 dark:border-brand-border shadow-md w-full object-cover" loading="lazy">`).join('');
+          const outputsHtml = (c.outputs || []).map(o => `<img src="${o.src}" alt="Output image" class="rounded-lg border border-gray-200 dark:border-brand-border shadow-md w-full object-cover" loading="lazy">`).join('');
+          
+          const el = document.createElement('div');
+          el.className = 'case-card glass-card rounded-2xl p-6 flex flex-col animate-fade-up transition-transform duration-300 hover:scale-105 cursor-pointer';
+          el.dataset.caseId = c.id; // Use unique ID
+          el.innerHTML = `
+            <div class="flex-grow pointer-events-none">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${c.title}</h3>
+              <p class="text-sm text-gray-700 dark:text-brand-text mb-4">Автор: <a href="${c.author_url || '#'}" target="_blank" class="text-brand-purple hover:underline pointer-events-auto">${c.author || 'Не указан'}</a></p>
+              
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                ${inputsHtml ? `<div class="space-y-2">${inputsHtml}</div>` : ''}
+                ${outputsHtml ? `<div class="space-y-2 ${!inputsHtml ? 'col-span-2' : ''}">${outputsHtml}</div>` : ''}
+              </div>
+              
+              ${c.description ? `<p class="text-gray-800 dark:text-brand-text-light mb-3 text-sm">${c.description}</p>` : ''}
+            </div>
+            <div class="mt-auto pt-4 border-t border-white/10">
+              ${c.prompt ? `
+                <div class="relative">
+                  <h4 class="font-semibold mb-2 text-gray-800 dark:text-brand-text-light text-xs uppercase tracking-wider">Промпт:</h4>
+                  <button class="copy-prompt-btn absolute top-0 right-0 p-2 bg-black/20 dark:bg-white/10 hover:bg-black/30 dark:hover:bg-white/20 rounded-lg text-gray-300 transition-colors" title="Копировать промпт" data-prompt="${c.prompt.replace(/"/g, '&quot;')}">
+                      <iconify-icon icon="lucide:copy" width="14" height="14"></iconify-icon>
+                  </button>
+                  <pre class="p-3 bg-black/10 dark:bg-white/5 border border-white/10 rounded-lg text-xs text-gray-800 dark:text-brand-text-light whitespace-pre-wrap font-mono pointer-events-none"><code>${c.prompt}</code></pre>
+                  <div class="flex gap-2 mt-2">
+                    <button class="explain-prompt-btn text-xs px-2 py-1 rounded-md bg-sky-500/20 text-sky-300 hover:bg-sky-500/40 transition-colors w-full">✨ Объяснить</button>
+                    <button class="improve-prompt-btn text-xs px-2 py-1 rounded-md bg-purple-500/20 text-purple-300 hover:bg-purple-500/40 transition-colors w-full">✨ Улучшить</button>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+          casesContainer.appendChild(el);
+        });
+      }
+
+      async function loadCases() {
+        try {
+          const res = await fetch('cases.json');
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          allCasesData = await res.json();
+          // Add unique ID to each case object
+          allCasesData.forEach((caseItem, index) => caseItem.id = `case-${index}`);
+          renderCases(allCasesData);
+        } catch (e) {
+          console.error("Не удалось загрузить кейсы:", e);
+          casesContainer.innerHTML = `<p class="text-center text-red-400 col-span-full">Ошибка при загрузке кейсов. Пожалуйста, проверьте файл cases.json и обновите страницу.</p>`;
+        } finally {
+          loaderContainer.classList.add('hidden');
+        }
+      }
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        const filteredData = allCasesData.filter(c => {
+          const title = (c.title || '').toLowerCase();
+          const author = (c.author || '').toLowerCase();
+          const prompt = (c.prompt || '').toLowerCase();
+          return title.includes(query) || author.includes(query) || prompt.includes(query);
+        });
+        renderCases(filteredData);
+      });
+      
+      document.body.addEventListener('click', e => {
+        const copyBtn = e.target.closest('.copy-prompt-btn');
+        if (copyBtn) {
+            const promptText = copyBtn.dataset.prompt;
+            navigator.clipboard.writeText(promptText).then(() => {
+                showToast('Промпт скопирован!');
+            }).catch(err => {
+                console.error('Не удалось скопировать: ', err);
+                showToast('Ошибка копирования');
+            });
+            return;
+        }
+
+        const explainBtn = e.target.closest('.explain-prompt-btn');
+        if(explainBtn) {
+            const promptText = explainBtn.closest('.relative').querySelector('.copy-prompt-btn').dataset.prompt;
+            handleExplainPrompt(promptText);
+            return;
+        }
+
+        const improveBtn = e.target.closest('.improve-prompt-btn');
+        if(improveBtn) {
+            const promptText = improveBtn.closest('.relative').querySelector('.copy-prompt-btn').dataset.prompt;
+            handleImprovePrompt(promptText);
+            return;
+        }
+
+        const card = e.target.closest('.case-card');
+        if (card && !e.target.closest('button, a')) {
+            const caseId = card.dataset.caseId; // Get unique ID
+            if (caseId) {
+                const caseData = allCasesData.find(c => c.id === caseId); // Find by ID
+                if (caseData) {
+                   populateAndShowCaseModal(caseData);
+                }
+            }
+        }
+      });
+
+      loadCases();
+    });
+  </script>
+</body>
+</html>
+

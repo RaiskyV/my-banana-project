@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Генератор Изображений | Nano Banana Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- THEME ---
+      const htmlEl = document.documentElement;
+      const themeToggle = document.getElementById('theme-toggle');
+      function showToast(msg) { 
+        const toast = document.getElementById('toast');
+        toast.textContent = msg; 
+        toast.classList.remove('hidden'); 
+        setTimeout(() => toast.classList.add('hidden'), 2200); 
+      }
+      function setThemeFromStorage() { 
+        const theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+          htmlEl.classList.remove('dark');
+          htmlEl.classList.add('light');
+        } else {
+          htmlEl.classList.add('dark');
+          htmlEl.classList.remove('light');
+        }
+      }
+      setThemeFromStorage();
+      themeToggle.addEventListener('click', () => { 
+        htmlEl.classList.toggle('dark'); 
+        htmlEl.classList.toggle('light'); 
+        localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light'); 
+      });
+
+      // --- ELEMENTS ---
+      const imageUploadInput = document.getElementById('image-upload-input');
+      const addImageLabel = document.getElementById('add-image-label');
+      const previewsContainer = document.getElementById('image-previews-container');
+      const promptInput = document.getElementById('prompt-input');
+      const translateBtn = document.getElementById('translate-btn');
+      const improvePromptBtn = document.getElementById('improve-prompt-btn');
+      const generateBtn = document.getElementById('generate-btn');
+      
+      const outputPlaceholder = document.getElementById('output-placeholder');
+      const outputLoader = document.getElementById('output-loader');
+      const outputImage = document.getElementById('output-image');
+      const outputActions = document.getElementById('output-actions');
+      const viewImageBtn = document.getElementById('view-image-btn');
+      const downloadImageBtn = document.getElementById('download-image-btn');
+      const outputError = document.getElementById('output-error');
+
+      const imageViewerModal = document.getElementById('image-viewer-modal');
+      const modalImage = document.getElementById('modal-image');
+      const modalCloseBtn = document.getElementById('modal-close-btn');
+
+      const geminiModal = document.getElementById('gemini-modal');
+      const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+      const geminiModalTitle = document.getElementById('gemini-modal-title');
+      const geminiModalContent = document.getElementById('gemini-modal-content');
+      const geminiModalCloseBtn = document.getElementById('gemini-modal-close-btn');
+
+      let uploadedFiles = [];
+      const MAX_FILES = 5;
+
+      // --- API KEYS ---
+      const GEMINI_API_KEY = "AIzaSyAfxN5kHgrXQC0EH6gd3A8-TG-3edlz9BI";
+      // REPLICATE_API_TOKEN is now on the server
+
+      // --- TEXTAREA AUTOSIZE ---
+      function autosizeTextarea(el) {
+          el.style.height = 'auto';
+          el.style.height = (el.scrollHeight) + 'px';
+      }
+      promptInput.addEventListener('input', () => autosizeTextarea(promptInput));
+
+      // --- IMAGE UPLOAD LOGIC ---
+      addImageLabel.addEventListener('click', (e) => {
+        if (uploadedFiles.length >= MAX_FILES) {
+          e.preventDefault();
+          showToast(`Можно загрузить не более ${MAX_FILES} изображений.`);
+        }
+      });
+      imageUploadInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        const remainingSlots = MAX_FILES - uploadedFiles.length;
+        const filesToProcess = files.slice(0, remainingSlots);
+        filesToProcess.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const fileData = { id: Date.now() + Math.random(), file: file, dataUrl: event.target.result };
+            uploadedFiles.push(fileData);
+            renderPreviews();
+          };
+          reader.readAsDataURL(file);
+        });
+        imageUploadInput.value = '';
+      });
+
+      function renderPreviews() {
+        previewsContainer.innerHTML = ''; 
+        uploadedFiles.forEach(fileData => {
+          const previewElement = document.createElement('div');
+          previewElement.className = 'preview-element relative w-16 h-16 rounded-lg overflow-hidden group flex-shrink-0';
+          previewElement.innerHTML = `
+            <img src="${fileData.dataUrl}" class="w-full h-full object-cover">
+            <button data-id="${fileData.id}" class="remove-btn absolute top-0.5 right-0.5 p-0.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <iconify-icon icon="lucide:x" width="12" height="12"></iconify-icon>
+            </button>
+          `;
+          previewsContainer.appendChild(previewElement);
+        });
+        previewsContainer.appendChild(addImageLabel);
+        addImageLabel.style.display = uploadedFiles.length < MAX_FILES ? 'flex' : 'none';
+        document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToRemove = parseFloat(e.currentTarget.dataset.id);
+                uploadedFiles = uploadedFiles.filter(f => f.id !== idToRemove);
+                renderPreviews();
+            });
+        });
+      }
+      renderPreviews();
+      
+      // --- GEMINI & TRANSLATE LOGIC ---
+      async function callGemini(prompt) {
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+          const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          if (!response.ok) throw new Error(`API Error: ${response.status}`);
+          const result = await response.json();
+          return result.candidates?.[0]?.content?.parts?.[0]?.text.trim() || "";
+      }
+      translateBtn.addEventListener('click', async () => {
+        const text = promptInput.value.trim();
+        if (!text) { showToast('Введите текст для перевода.'); return; }
+        translateBtn.disabled = true;
+        const originalIcon = translateBtn.innerHTML;
+        translateBtn.innerHTML = `<iconify-icon icon="line-md:loading-loop" width="20" height="20"></iconify-icon>`;
+        const prompt = `Translate the following Russian text to English. Return ONLY the translated text... Text to translate: "${text}"`;
+        try {
+            const translatedText = await callGemini(prompt);
+            promptInput.value = translatedText;
+            autosizeTextarea(promptInput);
+        } catch (error) {
+            console.error("Translate Error:", error);
+            showToast('Ошибка перевода.');
+        } finally {
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = originalIcon;
+        }
+      });
+      improvePromptBtn.addEventListener('click', async () => {
+        const text = promptInput.value.trim();
+        if (!text) { showToast('Введите промпт, чтобы его улучшить.'); return; }
+        showGeminiModal('Улучшение промпта', '<div class="flex justify-center items-center p-8"><div class="loader"></div></div>');
+        const prompt = `You are an expert prompt engineer... User's prompt: '${text}'`;
+        try {
+          const improvedPrompts = await callGemini(prompt);
+          showGeminiModal('Варианты улучшений', markdownToHtml(improvedPrompts));
+        } catch (error) {
+          console.error("Gemini API Error:", error);
+          showGeminiModal('Ошибка', `<p class="text-red-400">Ошибка: ${error.message}</p>`);
+        }
+      });
+
+      // --- GENERATE LOGIC (UPDATED) ---
+      generateBtn.addEventListener('click', async () => {
+        const prompt = promptInput.value.trim();
+        if (uploadedFiles.length === 0) { showToast('Добавьте хотя бы один референс.'); return; }
+        if (!prompt) { showToast('Введите промпт.'); return; }
+
+        generateBtn.disabled = true;
+        document.getElementById('generate-text').textContent = 'Generating...';
+        document.getElementById('generate-icon').classList.add('hidden');
+        document.getElementById('generate-loader').classList.remove('hidden');
+        
+        outputPlaceholder.classList.add('hidden');
+        outputImage.classList.add('hidden');
+        outputError.classList.add('hidden');
+        outputLoader.classList.remove('hidden');
+
+        try {
+            const imageDataUrls = uploadedFiles.map(f => f.dataUrl);
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    images: imageDataUrls,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || `Ошибка сервера: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const resultUrl = result.output_url;
+            
+            outputImage.src = resultUrl;
+            downloadImageBtn.href = resultUrl;
+            outputImage.onload = () => {
+                outputLoader.classList.add('hidden');
+                outputImage.classList.remove('hidden');
+                outputImage.classList.add('fade-in');
+                setTimeout(() => {
+                    outputActions.classList.remove('opacity-0', 'pointer-events-none');
+                }, 100);
+            };
+        } catch (error) {
+            console.error('Generation failed:', error);
+            outputError.textContent = `Ошибка: ${error.message}`;
+            outputError.classList.remove('hidden');
+            outputLoader.classList.add('hidden');
+        } finally {
+            generateBtn.disabled = false;
+            document.getElementById('generate-text').textContent = 'Generate';
+            document.getElementById('generate-icon').classList.remove('hidden');
+            document.getElementById('generate-loader').classList.add('hidden');
+        }
+      });
+      
+      // --- MODAL LOGIC (Image Viewer & Gemini) ---
+      function showGeminiModal(title, content) { /* ... (no changes) ... */ }
+      function closeGeminiModal() { /* ... (no changes) ... */ }
+      geminiModalCloseBtn.addEventListener('click', closeGeminiModal);
+      geminiModalOverlay.addEventListener('click', closeGeminiModal);
+      function markdownToHtml(text) { /* ... (no changes) ... */ }
+      function openImageViewer(src) { /* ... (no changes) ... */ }
+      function closeImageViewer() { /* ... (no changes) ... */ }
+      viewImageBtn.addEventListener('click', () => openImageViewer(outputImage.src));
+      modalCloseBtn.addEventListener('click', closeImageViewer);
+      imageViewerModal.addEventListener('click', (e) => {
+        if (e.target === imageViewerModal) closeImageViewer();
+      });
+    });
+  </script>
+</body>
+</html>
+  </script>
+  <style>
+    body { 
+      transition: background-color 0.5s ease-in-out;
+      overflow-x: hidden;
+    }
+    html.dark body {
+      background-color: #1a1a1d;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 100 100'%3E%3Cpath d='M 30 70 C 40 40, 60 40, 70 70 Q 50 90, 30 70 Z' fill='rgba(255,255,255,0.02)'/%3E%3C/svg%3E");
+    }
+    html.light body {
+      background-color: #f5f5f7;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 100 100'%3E%3Cpath d='M 30 70 C 40 40, 60 40, 70 70 Q 50 90, 30 70 Z' fill='rgba(0,0,0,0.02)'/%3E%3C/svg%3E");
+    }
+
+    .glass-card { background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--tw-border-brand-border); }
+    .light .glass-card { background: rgba(255, 255, 255, 0.4); border: 1px solid var(--tw-border-brand-border-light); }
+    .loader { border: 4px solid rgba(255,255,255,.2); border-left-color: #a855f7; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #image-viewer-modal, #gemini-modal { transition: opacity 0.3s ease, transform 0.3s ease; }
+    .prompt-input::placeholder { color: #6b7280; }
+    .light .prompt-input::placeholder { color: #4b5563; }
+    .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    #gemini-modal.glass-card {
+      background: rgba(20, 20, 22, 0.9);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+    }
+    .light #gemini-modal.glass-card {
+      background: rgba(243, 244, 246, 0.95);
+    }
+  </style>
+</head>
+<body class="antialiased text-brand-text transition-colors duration-300">
+  <!-- Header -->
+  <header class="sticky top-0 z-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div class="glass-card flex items-center justify-between h-16 rounded-2xl px-4">
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="flex items-center gap-3">
+                    <div class="bg-black/20 rounded-lg p-1.5 flex items-center justify-center">
+                        <iconify-icon icon="lucide:banana" width="24" height="24" class="text-yellow-400"></iconify-icon>
+                    </div>
+                    <span class="font-semibold text-gray-900 dark:text-white hidden sm:block">Valery Raisky — Nano Banana</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-2 md:space-x-4">
+                 <a href="index.html" class="px-3 py-1.5 border border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white bg-black/10 dark:bg-white/5 hover:bg-black/20 dark:hover:bg-white/10 flex items-center gap-2">
+                    <iconify-icon icon="lucide:arrow-left" width="16" height="16"></iconify-icon>
+                    Назад к гайду
+                </a>
+                <button id="theme-toggle" class="px-3 py-1.5 border border-white/10 rounded-lg text-sm font-medium text-gray-900 dark:text-white bg-black/10 dark:bg-white/5 hover:bg-black/20 dark:hover:bg-white/10 flex items-center gap-2">
+                    <iconify-icon class="dark:hidden" icon="lucide:sun" width="16" height="16"></iconify-icon>
+                    <iconify-icon class="hidden dark:inline" icon="lucide:moon-star" width="16" height="16"></iconify-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+  <!-- Main Content -->
+  <main class="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] px-4">
+    <!-- Output Section -->
+    <div id="output-section" class="w-full max-w-2xl mb-4">
+        <div id="output-container" class="relative w-full aspect-square bg-black/10 dark:bg-white/20 glass-card rounded-2xl flex items-center justify-center transition-all duration-300">
+            <div id="output-placeholder" class="text-center text-gray-400 dark:text-gray-300 p-8">
+                <iconify-icon icon="lucide:image" width="64" height="64" class="mx-auto mb-4 opacity-50"></iconify-icon>
+                <p class="font-semibold">Здесь появится ваше изображение</p>
+                <p class="text-sm">Загрузите референсы и напишите промпт, чтобы начать</p>
+            </div>
+            <div id="output-loader" class="loader hidden"></div>
+            <img id="output-image" class="hidden w-full h-full object-contain rounded-2xl">
+            <div id="output-actions" class="absolute bottom-3 right-3 flex gap-2 opacity-0 pointer-events-none transition-opacity">
+                <button id="view-image-btn" class="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm">
+                    <iconify-icon icon="lucide:maximize" width="20" height="20"></iconify-icon>
+                </button>
+                <a id="download-image-btn" href="#" download="generated_image.png" class="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm">
+                    <iconify-icon icon="lucide:download" width="20" height="20"></iconify-icon>
+                </a>
+            </div>
+             <p id="output-error" class="hidden text-red-400 text-sm p-4 text-center"></p>
+        </div>
+    </div>
+
+    <!-- Input Panel -->
+    <div class="w-full max-w-2xl glass-card rounded-2xl p-4">
+      <div class="flex flex-col gap-3">
+        <!-- Image Uploads -->
+        <div id="image-previews-container" class="flex flex-wrap items-center gap-2">
+           <label id="add-image-label" class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 transition bg-black/10 dark:bg-white/10 border-2 border-dashed rounded-lg appearance-none cursor-pointer hover:border-yellow-500 focus:outline-none group">
+                <iconify-icon icon="lucide:plus" width="24" height="24" class="text-gray-600 dark:text-gray-400 group-hover:text-yellow-500 transition-colors"></iconify-icon>
+                <input type="file" id="image-upload-input" accept="image/*" class="sr-only" multiple>
+            </label>
+        </div>
+        <!-- Prompt Input -->
+        <div class="flex items-end gap-3">
+            <div class="relative flex-grow">
+                <textarea id="prompt-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 prompt-input resize-none overflow-hidden" placeholder="Type prompt here..."></textarea>
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex-shrink-0 flex items-center gap-2">
+                <button id="improve-prompt-btn" class="p-2 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50" title="✨ Улучшить промпт">
+                    <iconify-icon icon="lucide:sparkles" width="20" height="20"></iconify-icon>
+                </button>
+                <button id="translate-btn" class="p-2 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50" title="Перевести на английский">
+                    <iconify-icon icon="lucide:languages" width="20" height="20"></iconify-icon>
+                </button>
+                <button id="generate-btn" class="px-6 py-3 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition-all duration-200 disabled:opacity-50 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base">
+                    <div id="generate-loader" class="hidden loader w-5 h-5 border-2"></div>
+                    <iconify-icon id="generate-icon" icon="lucide:wand" width="18" height="18"></iconify-icon>
+                    <span id="generate-text">Generate</span>
+                </button>
+            </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Image Viewer Modal -->
+  <div id="image-viewer-modal" class="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center opacity-0 pointer-events-none scale-95">
+      <img id="modal-image" src="" class="max-w-[90vw] max-h-[90vh] object-contain">
+      <button id="modal-close-btn" class="absolute top-4 right-4 p-2 text-white rounded-full bg-black/50 hover:bg-black/70">
+          <iconify-icon icon="lucide:x" width="24" height="24"></iconify-icon>
+      </button>
+  </div>
+  
+  <!-- Gemini Modal -->
+  <div id="gemini-modal-overlay" class="fixed inset-0 bg-black/70 z-[110] transition-opacity duration-300 opacity-0 pointer-events-none"></div>
+  <div id="gemini-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-12 w-full max-w-2xl glass-card rounded-2xl p-6 z-[120] transition-all duration-300 opacity-0 scale-95 flex flex-col max-h-[85vh]">
+    <div class="flex-shrink-0 flex items-center justify-between mb-4">
+      <h3 id="gemini-modal-title" class="text-xl font-bold text-gray-100 flex items-center gap-2"></h3>
+      <button id="gemini-modal-close-btn" class="p-2 rounded-full hover:bg-white/10">
+        <iconify-icon icon="lucide:x" width="20" height="20" class="text-brand-text-light"></iconify-icon>
+      </button>
+    </div>
+    <div id="gemini-modal-content" class="overflow-y-auto text-brand-text-light prose prose-invert max-w-none prose-p:my-2 prose-headings:text-white pr-2">
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden px-4 py-2 rounded-xl glass-card text-white z-[130]"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- THEME ---
+      const htmlEl = document.documentElement;
+      const themeToggle = document.getElementById('theme-toggle');
+      function showToast(msg) { 
+        const toast = document.getElementById('toast');
+        toast.textContent = msg; 
+        toast.classList.remove('hidden'); 
+        setTimeout(() => toast.classList.add('hidden'), 2200); 
+      }
+      function setThemeFromStorage() { 
+        const theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+          htmlEl.classList.remove('dark');
+          htmlEl.classList.add('light');
+        } else {
+          htmlEl.classList.add('dark');
+          htmlEl.classList.remove('light');
+        }
+      }
+      setThemeFromStorage();
+      themeToggle.addEventListener('click', () => { 
+        htmlEl.classList.toggle('dark'); 
+        htmlEl.classList.toggle('light'); 
+        localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light'); 
+      });
+
+      // --- ELEMENTS ---
+      const imageUploadInput = document.getElementById('image-upload-input');
+      const addImageLabel = document.getElementById('add-image-label');
+      const previewsContainer = document.getElementById('image-previews-container');
+      const promptInput = document.getElementById('prompt-input');
+      const translateBtn = document.getElementById('translate-btn');
+      const improvePromptBtn = document.getElementById('improve-prompt-btn');
+      const generateBtn = document.getElementById('generate-btn');
+      
+      const outputSection = document.getElementById('output-section');
+      const outputContainer = document.getElementById('output-container');
+      const outputPlaceholder = document.getElementById('output-placeholder');
+      const outputLoader = document.getElementById('output-loader');
+      const outputImage = document.getElementById('output-image');
+      const outputActions = document.getElementById('output-actions');
+      const viewImageBtn = document.getElementById('view-image-btn');
+      const downloadImageBtn = document.getElementById('download-image-btn');
+      const outputError = document.getElementById('output-error');
+
+      const imageViewerModal = document.getElementById('image-viewer-modal');
+      const modalImage = document.getElementById('modal-image');
+      const modalCloseBtn = document.getElementById('modal-close-btn');
+
+      const geminiModal = document.getElementById('gemini-modal');
+      const geminiModalOverlay = document.getElementById('gemini-modal-overlay');
+      const geminiModalTitle = document.getElementById('gemini-modal-title');
+      const geminiModalContent = document.getElementById('gemini-modal-content');
+      const geminiModalCloseBtn = document.getElementById('gemini-modal-close-btn');
+
+      let uploadedFiles = [];
+      const MAX_FILES = 5;
+
+      // --- API KEYS ---
+      const GEMINI_API_KEY = "AIzaSyAfxN5kHgrXQC0EH6gd3A8-TG-3edlz9BI";
+      const REPLICATE_API_TOKEN = 'r8_FlUNv0x7koDTyD0nGRbFHPTDtNB96LS0leOBR';
+
+      // --- TEXTAREA AUTOSIZE ---
+      function autosizeTextarea(el) {
+          el.style.height = 'auto';
+          el.style.height = (el.scrollHeight) + 'px';
+      }
+      promptInput.addEventListener('input', () => autosizeTextarea(promptInput));
+
+
+      // --- IMAGE UPLOAD LOGIC ---
+      addImageLabel.addEventListener('click', (e) => {
+        if (uploadedFiles.length >= MAX_FILES) {
+          e.preventDefault();
+          showToast(`Можно загрузить не более ${MAX_FILES} изображений.`);
+        }
+      });
+
+      imageUploadInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        const remainingSlots = MAX_FILES - uploadedFiles.length;
+        const filesToProcess = files.slice(0, remainingSlots);
+
+        filesToProcess.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const fileData = { id: Date.now() + Math.random(), file: file, dataUrl: event.target.result };
+            uploadedFiles.push(fileData);
+            renderPreviews();
+          };
+          reader.readAsDataURL(file);
+        });
+        
+        imageUploadInput.value = '';
+      });
+
+      function renderPreviews() {
+        previewsContainer.innerHTML = ''; 
+        
+        uploadedFiles.forEach(fileData => {
+          const previewElement = document.createElement('div');
+          previewElement.className = 'preview-element relative w-16 h-16 rounded-lg overflow-hidden group flex-shrink-0';
+          previewElement.innerHTML = `
+            <img src="${fileData.dataUrl}" class="w-full h-full object-cover">
+            <button data-id="${fileData.id}" class="remove-btn absolute top-0.5 right-0.5 p-0.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <iconify-icon icon="lucide:x" width="12" height="12"></iconify-icon>
+            </button>
+          `;
+          previewsContainer.appendChild(previewElement);
+        });
+        
+        previewsContainer.appendChild(addImageLabel);
+        addImageLabel.style.display = uploadedFiles.length < MAX_FILES ? 'flex' : 'none';
+        
+        document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToRemove = parseFloat(e.currentTarget.dataset.id);
+                uploadedFiles = uploadedFiles.filter(f => f.id !== idToRemove);
+                renderPreviews();
+            });
+        });
+      }
+      renderPreviews();
+      
+      // --- GEMINI & TRANSLATE LOGIC ---
+      async function callGemini(prompt) {
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+          const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          if (!response.ok) throw new Error(`API Error: ${response.status}`);
+          const result = await response.json();
+          return result.candidates?.[0]?.content?.parts?.[0]?.text.trim() || "";
+      }
+
+      translateBtn.addEventListener('click', async () => {
+        const text = promptInput.value.trim();
+        if (!text) { showToast('Введите текст для перевода.'); return; }
+        translateBtn.disabled = true;
+        const originalIcon = translateBtn.innerHTML;
+        translateBtn.innerHTML = `<iconify-icon icon="line-md:loading-loop" width="20" height="20"></iconify-icon>`;
+        const prompt = `Translate the following Russian text to English. Return ONLY the translated text, without any additional explanations or introductory phrases. Text to translate: "${text}"`;
+        try {
+            const translatedText = await callGemini(prompt);
+            promptInput.value = translatedText;
+            autosizeTextarea(promptInput);
+        } catch (error) {
+            console.error("Translate Error:", error);
+            showToast('Ошибка перевода.');
+        } finally {
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = originalIcon;
+        }
+      });
+
+      improvePromptBtn.addEventListener('click', async () => {
+        const text = promptInput.value.trim();
+        if (!text) { showToast('Введите промпт, чтобы его улучшить.'); return; }
+        
+        showGeminiModal('Улучшение промпта', '<div class="flex justify-center items-center p-8"><div class="loader"></div></div>');
+        const prompt = `You are an expert prompt engineer for AI image generation. A user has provided the following prompt. Your task is to suggest 3 creative, more detailed, and improved variations of this prompt. Explain in Russian why each variation is better or what it adds. Format your response in simple Markdown. User's prompt: '${text}'`;
+        
+        try {
+          const improvedPrompts = await callGemini(prompt);
+          showGeminiModal('Варианты улучшений', markdownToHtml(improvedPrompts));
+        } catch (error) {
+          console.error("Gemini API Error:", error);
+          showGeminiModal('Ошибка', `<p class="text-red-400">Произошла ошибка при обращении к Gemini API: ${error.message}</p>`);
+        }
+      });
+
+      // --- GENERATE LOGIC ---
+      generateBtn.addEventListener('click', async () => {
+        const prompt = promptInput.value.trim();
+        if (uploadedFiles.length === 0) { showToast('Добавьте хотя бы один референс.'); return; }
+        if (!prompt) { showToast('Введите промпт.'); return; }
+
+        generateBtn.disabled = true;
+        document.getElementById('generate-text').textContent = 'Generating...';
+        document.getElementById('generate-icon').classList.add('hidden');
+        document.getElementById('generate-loader').classList.remove('hidden');
+        
+        outputPlaceholder.classList.add('hidden');
+        outputImage.classList.add('hidden');
+        outputError.classList.add('hidden');
+        outputLoader.classList.remove('hidden');
+
+        try {
+            // Replicate doesn't need data URLs, it needs publicly accessible URLs.
+            // For a real app, you'd upload to a service like S3 and get a URL.
+            // For this demo, we can't directly upload from the browser in a way Replicate can access.
+            // This is a limitation of this client-side only setup.
+            // We will proceed assuming the old logic was a placeholder and now we need the real one.
+            showToast("Эта демонстрация не поддерживает загрузку файлов для Replicate.");
+            throw new Error("Client-side upload to Replicate is not feasible without a backend proxy.");
+
+        } catch (error) {
+            console.error('Generation failed:', error);
+            outputError.textContent = `Ошибка: ${error.message}`;
+            outputError.classList.remove('hidden');
+            outputLoader.classList.add('hidden');
+        } finally {
+            generateBtn.disabled = false;
+            document.getElementById('generate-text').textContent = 'Generate';
+            document.getElementById('generate-icon').classList.remove('hidden');
+            document.getElementById('generate-loader').classList.add('hidden');
+        }
+      });
+
+      // --- MODAL LOGIC (Image Viewer & Gemini) ---
+      function showGeminiModal(title, content) {
+        geminiModalTitle.innerHTML = `<iconify-icon icon="lucide:sparkles" class="text-brand-pink"></iconify-icon> ${title}`;
+        geminiModalContent.innerHTML = content;
+        geminiModalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        geminiModal.classList.remove('opacity-0', 'scale-95');
+      }
+
+      function closeGeminiModal() {
+        geminiModalOverlay.classList.add('opacity-0', 'pointer-events-none');
+        geminiModal.classList.add('opacity-0', 'scale-95');
+      }
+
+      geminiModalCloseBtn.addEventListener('click', closeGeminiModal);
+      geminiModalOverlay.addEventListener('click', closeGeminiModal);
+
+      function markdownToHtml(text) {
+        if (!text) return '';
+        return text
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/^### (.*$)/gim, '<h3 class="font-bold text-lg mb-2 mt-4">$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2 class="font-bold text-xl mb-3 mt-5">$1</h2>')
+          .replace(/^\* (.*$)/gim, '<ul class="list-disc list-inside my-2"><li>$1</li></ul>')
+          .replace(/<\/ul>\s*<ul class="list-disc list-inside my-2">/g, '')
+          .replace(/\n/g, '<br>');
+      }
+
+      function openImageViewer(src) {
+        modalImage.src = src;
+        imageViewerModal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+      }
+      function closeImageViewer() {
+        imageViewerModal.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+      }
+      viewImageBtn.addEventListener('click', () => openImageViewer(outputImage.src));
+      modalCloseBtn.addEventListener('click', closeImageViewer);
+      imageViewerModal.addEventListener('click', (e) => {
+        if (e.target === imageViewerModal) closeImageViewer();
+      });
+
+    });
+  </script>
+</body>
+</html>
+
